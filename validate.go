@@ -12,7 +12,8 @@ func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type returnVals struct {
-		Valid bool `json:"valid"`
+		CleanedBody string 	`json:"cleaned_body"`
+		Valid bool 			`json:"valid"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -28,10 +29,21 @@ func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := returnVals{
+		CleanedBody: cleanProfaneInput(params.Body),
 		Valid: true,
 	}
 	dat, _ := json.Marshal(resp)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(dat)
+}
+
+func cleanProfaneInput(in string) string {
+	filters := []string{
+		"kerfuffle",
+		"sharbert",
+		"fornax",
+	}
+	replacement := "****"
+	return replaceAllWordsCaseInsensitive(in, filters, replacement)
 }
