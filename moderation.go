@@ -7,20 +7,17 @@ func replaceAllWordsCaseInsensitive(in string, filters []string, replacement str
 		return in
 	}
 
-	loweredFiltersSet := make(map[string]struct{})
+	filtersSet := make(map[string]struct{})
 	for _, filter := range filters {
-		loweredFiltersSet[filter] = struct{}{}
+		filtersSet[filter] = struct{}{}
 	}
 
 	words := strings.Split(in, " ")
-	cleaned := []string{}
-	for _, word := range words {
+	for i, word := range words {
 		lowered := strings.ToLower(word)
-		if _, ok := loweredFiltersSet[lowered]; ok {
-			cleaned = append(cleaned, replacement)
-			continue
+		if _, ok := filtersSet[lowered]; ok {
+			words[i] = replacement
 		}
-		cleaned = append(cleaned, word)
 	}
-	return strings.Join(cleaned, " ")
+	return strings.Join(words, " ")
 }
