@@ -16,9 +16,9 @@ func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 		Valid bool 			`json:"valid"`
 	}
 
-	decoder := json.NewDecoder(r.Body)
+	dec := json.NewDecoder(r.Body)
 	params := parameters{}
-	if err := decoder.Decode(&params); err != nil {
+	if err := dec.Decode(&params); err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
 		return
 	}
