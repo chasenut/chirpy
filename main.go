@@ -34,7 +34,7 @@ func main() {
 	}
 	dbQueries := database.New(dbConn)
 
-	cfg := apiConfig{
+	apiCfg := apiConfig{
 		fileserverHits: atomic.Int32{},
 		db: 			dbQueries,
 		platform: 		os.Getenv("PLATFORM"),
@@ -42,14 +42,16 @@ func main() {
 
 	mux := http.NewServeMux()
 	fsHandler := http.FileServer(http.Dir(filepathRoot))
-	mux.Handle("/app/", http.StripPrefix("/app", cfg.middlewareMetricsInc(fsHandler)))
+	mux.Handle("/app/", http.StripPrefix("/app", apiCfg.middlewareMetricsInc(fsHandler)))
 
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
-	mux.HandleFunc("POST /api/validate_chirp", handlerValidateChirp)
-	mux.HandleFunc("POST /api/users", cfg.handlerUsers)
 
-	mux.HandleFunc("GET /admin/metrics", cfg.handlerMetrics)
-	mux.HandleFunc("POST /admin/reset", cfg.handlerReset)
+	mux.HandleFunc("POST /api/users", apiCfg.handlerUsersCreate)
+
+	mux.HandleFunc("POST /api/chirps", apiCfg.handlerChirpsCreate)
+
+	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
+	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
 
 	server := &http.Server{
 		Addr: 	 ":" + port,
