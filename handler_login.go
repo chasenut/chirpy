@@ -13,6 +13,10 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		Email		string	`json:"email"`
 	}
 
+	type response struct {
+		User
+	}
+
 	dec := json.NewDecoder(r.Body)
 	params := &parameters{}
 	err := dec.Decode(&params)
@@ -23,19 +27,21 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 
 	user, err := cfg.db.GetUserByEmail(r.Context(), params.Email)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't retrieve such user", err)
+		respondWithError(w, http.StatusUnauthorized, "Incorrect email or password", err)
 		return
 	}
 
-	ok, err := auth.CheckPassowordHash(params.Password, user.HashedPassword)
-	if !ok || err != nil {
+	match, err := auth.CheckPassowordHash(params.Password, user.HashedPassword)
+	if !match || err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Incorrect email or password", nil)
 		return
 	}
-	respondWithJSON(w, http.StatusOK, User{
-		ID: user.ID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		Email: user.Email,
+	respondWithJSON(w, http.StatusOK, response{
+		User: User{
+			ID: user.ID,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+			Email: user.Email,
+		},
 	})
 }
