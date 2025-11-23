@@ -16,6 +16,7 @@ type apiConfig struct {
 	fileserverHits 	atomic.Int32
 	db 				*database.Queries
 	platform 		string
+	jwtSecret		string
 }
 
 func main() {
@@ -37,6 +38,7 @@ func main() {
 	apiCfg := apiConfig{
 		fileserverHits: atomic.Int32{},
 		db: 			dbQueries,
+		jwtSecret:		os.Getenv("SECRET"),
 		platform: 		os.Getenv("PLATFORM"),
 	}
 
