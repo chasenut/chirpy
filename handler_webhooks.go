@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/chasenut/chirpy/internal/auth"
 	"github.com/chasenut/chirpy/internal/database"
 	"github.com/google/uuid"
 )
@@ -18,9 +19,19 @@ func (cfg *apiConfig) handlerWebhook(w http.ResponseWriter, r *http.Request) {
 		}	`json:"data"`
 	}
 
+	apiKey, err := auth.GetAPIKey(r.Header)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Couldn't find api key", err)
+		return
+	}
+	if apiKey != cfg.polkaApiKey {
+		respondWithError(w, http.StatusUnauthorized, "Invalid api key", err)
+		return
+	}
+
 	dec := json.NewDecoder(r.Body)
 	params := parameters{}
-	err := dec.Decode(&params)
+	err = dec.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
 		return
